@@ -1,6 +1,6 @@
 {
   "name": "mailgun-codex",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Codex plugin for Mailgun email, deliverability, suppression, template, Inspect, Optimize, Validate, and reporting workflows.",
   "author": {
     "name": "Mailgun",

@@ -2,7 +2,7 @@
 
 Each release is tagged `v<version>` and published as a GitHub Release with an installable archive per platform. See [docs/release-process.md](docs/release-process.md).
 
-## Unreleased
+## 0.1.3
 
 - Add the Codex plugin package.
 - Build release archives for Claude, Cursor, Codex, and Gemini with `npm run build`, and attach them to a GitHub Release when a `v*` tag is pushed.
