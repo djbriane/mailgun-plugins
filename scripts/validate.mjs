@@ -1,5 +1,6 @@
 import { readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
+import { collectVersions } from "./lib/versions.mjs";
 
 const root = path.resolve(new URL("..", import.meta.url).pathname);
 const MCP_VERSION = "2.3.1";
@@ -171,13 +172,32 @@ for (const dir of [
   await validateSkills(dir);
 }
 
+const versions = await collectVersions(root);
+const packageVersion = versions[0].version;
+for (const { label, version } of versions) {
+  if (version !== packageVersion) failures.push(`${label} is ${version}, but package.json is ${packageVersion}`);
+}
+// The release workflow sets RELEASE_TAG to the pushed tag.
+const releaseTag = process.env.RELEASE_TAG;
+if (releaseTag && releaseTag !== `v${packageVersion}`) {
+  failures.push(`Release tag ${releaseTag} does not match package version v${packageVersion}`);
+}
+if (releaseTag && (await exists(path.join(root, "CHANGELOG.md")))) {
+  const changelog = await readFile(path.join(root, "CHANGELOG.md"), "utf8");
+  if (!new RegExp(`^## ${packageVersion.replaceAll(".", "\\.")}\\b`, "m").test(changelog)) {
+    failures.push(`CHANGELOG.md has no "## ${packageVersion}" entry for release ${releaseTag}`);
+  }
+}
+
 for (const file of [
   "README.md",
+  "CHANGELOG.md",
   "docs/architecture.md",
   "docs/platform-support.md",
   "docs/release-process.md",
   "shared/docs/mailgun-capabilities.md",
-  ".github/workflows/validate.yml"
+  ".github/workflows/validate.yml",
+  ".github/workflows/release.yml"
 ]) {
   await requireFile(path.join(root, file));
 }
