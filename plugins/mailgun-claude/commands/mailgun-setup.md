@@ -14,9 +14,9 @@ Ask for:
 
 Explain:
 
-- `MAILGUN_API_KEY` is required.
-- The packaged MCP config omits `MAILGUN_API_REGION`, so the MCP server defaults to `us`.
+- Claude prompts for the Mailgun API key and region when the plugin is enabled. The key is stored in the system credential store.
+- To change either value, run `claude plugin configure mailgun-claude@mailgun`, or use `/config` for the region.
 - The packaged MCP config omits `MAILGUN_MCP_TAGS`, so the MCP server exposes all tags.
-- For EU or narrowed tools, the user should add `MAILGUN_API_REGION` or `MAILGUN_MCP_TAGS` to the installed platform MCP config.
+- For narrowed tools, the user should add `MAILGUN_MCP_TAGS` to the installed plugin's `.mcp.json`.
 
-Show the user the configuration keys to add. Do not ask them to paste the secret into chat.
+Do not ask the user to paste the secret into chat.

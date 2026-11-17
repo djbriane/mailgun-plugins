@@ -43,7 +43,7 @@ Required environment:
 - `MAILGUN_API_REGION`: optional MCP server setting, `us` or `eu`; the packaged configs omit it and the server defaults to `us`.
 - `MAILGUN_MCP_TAGS`: optional MCP server setting for a comma separated list of products (`send`, `validate`, `optimize`, `inspect`), Send toolsets such as `send.templates`, `core`, or `dynamic`; the packaged configs omit it and expose all tools. See [Tags and Toolsets](shared/docs/mailgun-capabilities.md#tags-and-toolsets) for every value.
 
-For EU accounts or scoped tool sets, edit the installed platform MCP config to add `MAILGUN_API_REGION` or `MAILGUN_MCP_TAGS`. The Codex package forwards both from the environment, so Codex users can export them instead.
+For EU accounts or scoped tool sets, edit the installed platform MCP config to add `MAILGUN_API_REGION` or `MAILGUN_MCP_TAGS`. The Codex package forwards both from the environment, so Codex users can export them instead. The Claude package prompts for the API key and region when the plugin is enabled instead of reading the environment.
 
 ## Install
 
@@ -75,7 +75,7 @@ claude plugin install mailgun-claude@mailgun
 
 For the Claude desktop app, download `mailgun-claude-<version>.zip` from the latest release and choose it on the **Upload a plugin** screen.
 
-The Claude package includes a `.mcp.json` file, the shared Mailgun skills, and Claude compatible commands.
+The Claude package includes a `.mcp.json` file, the shared Mailgun skills, and Claude compatible commands. Claude asks for your Mailgun API key and region when you enable the plugin.
 
 ### Gemini CLI
 
@@ -144,7 +144,7 @@ See [docs/release-process.md](docs/release-process.md) for details.
 
 ## Troubleshooting
 
-- Missing API key: set `MAILGUN_API_KEY` in the platform environment and restart the agent app.
-- Wrong region: add `MAILGUN_API_REGION=eu` to the installed MCP config for EU accounts.
+- Missing API key: set `MAILGUN_API_KEY` in the platform environment and restart the agent app. In Claude, run `claude plugin configure mailgun-claude@mailgun`.
+- Wrong region: add `MAILGUN_API_REGION=eu` to the installed MCP config for EU accounts. In Claude, pick `eu` for the Mailgun region option.
 - Too many tools: add `MAILGUN_MCP_TAGS` to the installed MCP config with a narrower set, such as `core,send.templates`, or `dynamic` if the client refreshes its tool list when the server reports a change.
 - Local server testing: build the MCP server first, then point the platform MCP config at `dist/mailgun-mcp.js`.

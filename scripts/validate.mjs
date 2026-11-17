@@ -52,7 +52,7 @@ const validateMarketplace = async (platform, file, expectedName) => {
   }
 };
 
-const validateMcpConfig = async (file) => {
+const validateMcpConfig = async (file, { apiKey = "${MAILGUN_API_KEY}", region } = {}) => {
   const config = await readJson(file);
   const server = config.mcpServers?.mailgun;
   if (!server) failures.push(`${path.relative(root, file)} missing mcpServers.mailgun`);
@@ -61,18 +61,21 @@ const validateMcpConfig = async (file) => {
   if (!args.includes(`@mailgun/mcp-server@${MCP_VERSION}`)) {
     failures.push(`${path.relative(root, file)} must pin @mailgun/mcp-server@${MCP_VERSION}`);
   }
-  if (server?.env?.MAILGUN_API_KEY !== "${MAILGUN_API_KEY}") {
-    failures.push(`${path.relative(root, file)} must map MAILGUN_API_KEY from the user environment`);
+  if (server?.env?.MAILGUN_API_KEY !== apiKey) {
+    failures.push(`${path.relative(root, file)} must set MAILGUN_API_KEY to ${apiKey}`);
   }
-  if (server?.env?.MAILGUN_API_REGION !== undefined) {
+  if (region === undefined && server?.env?.MAILGUN_API_REGION !== undefined) {
     failures.push(`${path.relative(root, file)} should omit MAILGUN_API_REGION so the MCP server default applies`);
+  }
+  if (region !== undefined && server?.env?.MAILGUN_API_REGION !== region) {
+    failures.push(`${path.relative(root, file)} must set MAILGUN_API_REGION to ${region}`);
   }
   if (server?.env?.MAILGUN_MCP_TAGS !== undefined) {
     failures.push(`${path.relative(root, file)} should omit MAILGUN_MCP_TAGS so the MCP server default applies`);
   }
 };
 
-const validatePlugin = async ({ platform, dir, manifestPath, commandKey, mcpPath }) => {
+const validatePlugin = async ({ platform, dir, manifestPath, commandKey, mcpPath, mcpEnv }) => {
   const manifestFile = path.join(root, dir, manifestPath);
   const manifest = await readJson(manifestFile);
   requireFields(manifest, ["name", "version", "description", "author", "license", "keywords"], `${platform} plugin`);
@@ -82,7 +85,7 @@ const validatePlugin = async ({ platform, dir, manifestPath, commandKey, mcpPath
     for (const command of manifest[commandKey]) await assertPath(path.join(root, dir), command, `${platform} command`);
   }
   if (manifest.mcpServers) await assertPath(path.join(root, dir), manifest.mcpServers, `${platform} MCP config`);
-  await validateMcpConfig(path.join(root, dir, mcpPath));
+  await validateMcpConfig(path.join(root, dir, mcpPath), mcpEnv);
 };
 
 const validateSkills = async (dir) => {
@@ -112,12 +115,22 @@ await validatePlugin({
   dir: "plugins/mailgun-claude",
   manifestPath: ".claude-plugin/plugin.json",
   commandKey: "commands",
-  mcpPath: ".mcp.json"
+  mcpPath: ".mcp.json",
+  // Claude prompts for these when the plugin is enabled, so the desktop app works without shell exports.
+  mcpEnv: { apiKey: "${user_config.mailgun_api_key}", region: "${user_config.mailgun_api_region}" }
 });
 
 const claudeManifest = await readJson(path.join(root, "plugins/mailgun-claude/.claude-plugin/plugin.json"));
 if (claudeManifest.category !== undefined) {
   failures.push("Claude plugin manifest must not include category; put category on the marketplace entry");
+}
+const claudeApiKey = claudeManifest.userConfig?.mailgun_api_key;
+if (claudeApiKey?.sensitive !== true || claudeApiKey?.required !== true) {
+  failures.push("Claude userConfig.mailgun_api_key must be sensitive and required");
+}
+const claudeRegion = claudeManifest.userConfig?.mailgun_api_region;
+if (claudeRegion?.options?.join(",") !== "us,eu" || claudeRegion?.default !== "us") {
+  failures.push('Claude userConfig.mailgun_api_region must offer ["us", "eu"] and default to "us"');
 }
 
 const codexMarketplace = await readJson(path.join(root, ".agents", "plugins", "marketplace.json"));

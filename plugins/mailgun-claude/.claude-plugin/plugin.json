@@ -21,5 +21,21 @@
     "./commands/compare-delivery-across-domains.md"
   ],
   "skills": "./skills",
-  "mcpServers": "./.mcp.json"
+  "mcpServers": "./.mcp.json",
+  "userConfig": {
+    "mailgun_api_key": {
+      "type": "string",
+      "title": "Mailgun API key",
+      "description": "Private API key from the Mailgun dashboard under API Security.",
+      "sensitive": true,
+      "required": true
+    },
+    "mailgun_api_region": {
+      "type": "string",
+      "title": "Mailgun region",
+      "description": "Region your Mailgun account is hosted in.",
+      "options": ["us", "eu"],
+      "default": "us"
+    }
+  }
 }

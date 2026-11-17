@@ -22,14 +22,11 @@ Claude desktop: download `mailgun-claude-<version>.zip` from the [latest release
 
 ## Configure
 
-Set:
+Claude asks for two values when the plugin is enabled:
 
-```bash
-export MAILGUN_API_KEY="key-..."
-```
+- Mailgun API key: your private API key. Claude stores it in the system credential store, not in `settings.json`.
+- Mailgun region: `us` (default) or `eu`.
 
-Restart the host after changing environment values.
+To change them later, run `claude plugin configure mailgun-claude@mailgun`, or use `/config` for the region. The values come from Claude rather than the shell, so the Claude desktop app doesn't need `MAILGUN_API_KEY` exported. The region picker requires Claude Code 2.1.271 or later.
 
-The Claude desktop app doesn't read shell profile exports when launched from the Dock or Finder. On macOS, run `launchctl setenv MAILGUN_API_KEY "key-..."`, then fully quit and reopen the app.
-
-The packaged config uses the MCP server defaults: US region and all Mailgun tool tags. For EU accounts or scoped tool sets, add `MAILGUN_API_REGION` or `MAILGUN_MCP_TAGS` to `.mcp.json`.
+The packaged config exposes all Mailgun tool tags. For scoped tool sets, add `MAILGUN_MCP_TAGS` to `.mcp.json`.

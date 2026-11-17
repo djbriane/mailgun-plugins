@@ -35,7 +35,9 @@ claude plugin marketplace add mailgun/mailgun-plugins
 claude plugin install mailgun-claude@mailgun
 ```
 
-Claude desktop: download `mailgun-claude-<version>.zip` from the GitHub Release and choose it on the **Upload a plugin** screen. The desktop app doesn't read shell profile exports, so `MAILGUN_API_KEY` has to be set for GUI apps (on macOS, `launchctl setenv MAILGUN_API_KEY "key-..."`, then restart the app).
+Claude desktop: download `mailgun-claude-<version>.zip` from the GitHub Release and choose it on the **Upload a plugin** screen.
+
+The Claude manifest declares `userConfig` options for the API key (sensitive, kept in the system credential store) and the region (`us` or `eu`). Claude prompts for them when the plugin is enabled, and `.mcp.json` reads them as `${user_config.mailgun_api_key}` and `${user_config.mailgun_api_region}`. This is what makes the desktop app work, since it doesn't read shell profile exports. The region picker needs Claude Code 2.1.271 or later.
 
 ## Gemini CLI
 
