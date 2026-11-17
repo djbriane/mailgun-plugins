@@ -25,8 +25,9 @@ See [docs/platform-support.md](docs/platform-support.md) for the detailed matrix
 
 GitHub Actions is enabled for this repository:
 
-- `Validate` runs on pushes and pull requests to `main`.
-- `Publish Gemini Extension Branch` builds `plugins/mailgun-gemini` into a Gemini extension artifact and publishes it to the `gemini-extension` branch when Gemini package files change.
+- `Validate` runs on pushes and pull requests to `main`, and builds every release archive so packaging breaks show up in review.
+- `Release` runs when a `v*` tag is pushed. It validates the tag against the package version, runs the Claude and Gemini validators on the built archives, and creates a [GitHub Release](https://github.com/mailgun/mailgun-plugins/releases) with one archive per platform and a `SHA256SUMS` file.
+- `Publish Gemini Extension Branch` builds `plugins/mailgun-gemini` and publishes it to the `gemini-extension` branch when Gemini package files change on `main`, and on every release.
 
 ## MCP Server Compatibility
 
@@ -46,9 +47,13 @@ For EU accounts or scoped tool sets, edit the installed platform MCP config to a
 
 ## Install
 
+Each [GitHub Release](https://github.com/mailgun/mailgun-plugins/releases) attaches an archive per platform: `mailgun-claude-<version>.zip`, `mailgun-cursor-<version>.zip`, `mailgun-codex-<version>.zip`, and `mailgun-gemini-<version>.zip`, plus `SHA256SUMS`. Marketplace installs are the easiest way to stay current; the archives are for hosts that take an upload and for pinned or offline installs.
+
 ### Cursor
 
 Install from the Cursor plugin marketplace, or add this repository as a marketplace source in Cursor and install `mailgun-cursor`.
+
+To install a release archive instead, unzip `mailgun-cursor-<version>.zip` into `~/.cursor/plugins/local/mailgun-cursor` and run **Developer: Reload Window**. Cursor doesn't install zip files directly.
 
 For a step-by-step walkthrough, see [Get Started with Mailgun MCP and Skills in Cursor Marketplace](https://help.mailgun.com/hc/en-us/articles/56851546909979-Get-Started-with-Mailgun-MCP-and-Skills-in-Cursor-Marketplace).
 
@@ -61,19 +66,34 @@ The Cursor package includes:
 
 ### Claude Code
 
-Add this repository as a Claude plugin marketplace source, then install `mailgun-claude`.
+Add this repository as a Claude plugin marketplace source, then install `mailgun-claude`:
+
+```bash
+claude plugin marketplace add mailgun/mailgun-plugins
+claude plugin install mailgun-claude@mailgun
+```
+
+For the Claude desktop app, download `mailgun-claude-<version>.zip` from the latest release and choose it on the **Upload a plugin** screen.
 
 The Claude package includes a `.mcp.json` file, the shared Mailgun skills, and Claude compatible commands.
 
 ### Gemini CLI
 
-Install the generated Gemini extension branch:
+Install the latest release:
+
+```bash
+gemini extensions install https://github.com/mailgun/mailgun-plugins
+```
+
+Add `--ref v<version>` to pin a release. Gemini checks the latest GitHub Release for updates.
+
+Or install the generated Gemini extension branch, which tracks `main`. Gemini asks whether to fall back to `git clone` because no release is named `gemini-extension`; answer yes:
 
 ```bash
 gemini extensions install https://github.com/mailgun/mailgun-plugins --ref gemini-extension
 ```
 
-The source package is under `plugins/mailgun-gemini` and includes `gemini-extension.json`, skills, and TOML commands. Gemini requires `gemini-extension.json` at the repository root, so GitHub Actions publishes the `gemini-extension` branch from that package.
+The source package is under `plugins/mailgun-gemini` and includes `gemini-extension.json`, skills, and TOML commands. Gemini requires `gemini-extension.json` at the root of the repository or release archive, so GitHub Actions publishes the `gemini-extension` branch and release archives from that package.
 
 ### Codex
 
@@ -81,6 +101,14 @@ Add this repository as a Codex plugin marketplace, then install `mailgun-codex`:
 
 ```bash
 codex plugin marketplace add mailgun/mailgun-plugins
+codex plugin add mailgun-codex@mailgun
+```
+
+Codex doesn't install zip files, but the release archive bundles its own marketplace. Unzip it, then add the folder:
+
+```bash
+unzip mailgun-codex-<version>.zip -d mailgun-codex
+codex plugin marketplace add ./mailgun-codex
 codex plugin add mailgun-codex@mailgun
 ```
 
@@ -92,10 +120,10 @@ Public listing in the OpenAI plugin directory requires a remote HTTPS MCP server
 
 ```bash
 npm run sync
-npm run validate
-npm run check:sync
-npm run build:gemini
+npm test
 ```
+
+`npm test` runs `check:sync`, `validate`, and `build`. `npm run build` writes every platform archive and `SHA256SUMS` to `dist/release/`. With the Claude Code CLI installed, `npm run validate:claude` runs Claude's plugin validator.
 
 To verify the MCP server tag list from npm:
 
@@ -107,11 +135,10 @@ To test against a local server checkout, build `../mailgun-mcp-server`, then use
 
 ## Release
 
-1. Update the compatible MCP version in platform MCP configs, docs, and `scripts/validate.mjs`.
-2. Run `npm run sync`.
-3. Run `npm run validate`, `npm run check:sync`, and `npm run build:gemini`.
-4. Update changelogs and tag the repo release.
-5. Publish or refresh platform marketplace listings. The Gemini extension branch is generated by GitHub Actions.
+1. Run `npm run bump <version>` and move the `Unreleased` entries in `CHANGELOG.md` under that version.
+2. Run `npm test`, open a pull request, and merge it.
+3. Tag the merge commit `v<version>` and push the tag. The `Release` workflow builds the archives, creates the GitHub Release, and updates the `gemini-extension` branch.
+4. Refresh platform marketplace listings.
 
 See [docs/release-process.md](docs/release-process.md) for details.
 

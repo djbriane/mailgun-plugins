@@ -203,9 +203,6 @@ for (const file of [
 }
 
 const readme = await readFile(path.join(root, "README.md"), "utf8");
-if (readme.includes("gemini extensions install https://github.com/mailgun/mailgun-plugins\n")) {
-  failures.push("README must not tell users to install Gemini from the multi-platform repo root");
-}
 if (!readme.includes("--ref gemini-extension")) {
   failures.push("README must document Gemini install from the gemini-extension branch");
 }

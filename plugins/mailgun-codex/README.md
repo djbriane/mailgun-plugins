@@ -20,6 +20,14 @@ codex plugin add mailgun-codex@mailgun
 
 From a local checkout, run `codex plugin marketplace add .` from the repository root instead.
 
+From a release archive, unzip `mailgun-codex-<version>.zip` and add the folder. The archive carries its own marketplace, so keep the folder after installing:
+
+```bash
+unzip mailgun-codex-<version>.zip -d mailgun-codex
+codex plugin marketplace add ./mailgun-codex
+codex plugin add mailgun-codex@mailgun
+```
+
 ## Configure
 
 Set:

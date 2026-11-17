@@ -12,6 +12,10 @@ For setup instructions, see [Get Started with Mailgun MCP and Skills in Cursor M
 - Commands: `commands/`
 - Manifest: `.cursor-plugin/plugin.json`
 
+## Install
+
+Install `mailgun-cursor` from the Cursor Marketplace. To install a release archive instead, unzip `mailgun-cursor-<version>.zip` from the [latest release](https://github.com/mailgun/mailgun-plugins/releases/latest) into `~/.cursor/plugins/local/mailgun-cursor`, then run **Developer: Reload Window**.
+
 ## Configure
 
 Set the Mailgun API key in Cursor's environment settings:
